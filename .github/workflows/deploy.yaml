@@ -56,4 +56,4 @@ jobs:
 
 
         - run: sam build --use-container
-        - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --no-progressbar --stack-name AWS-outfit-assistant
+        - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --no-progressbar --stack-name AWS-outfit-assistant --resolve-s3
