@@ -5,19 +5,18 @@ Description: >
   This template demonstrates the deployment of Agents for Amazon Bedrock using AWS Serverless Application Model (SAM).
 
   Note: The demo relies on you having an account with OpenWeatherMap, and an API key to access the Weather service.
-  This service is available on the OpenWeatherMap free plan. (https://openweathermap.org/current) Please review any 
-  license terms applicable to the service with your legal team and confirm that your use case complies with the terms 
+  This service is available on the OpenWeatherMap free plan. (https://openweathermap.org/current) Please review any
+  license terms applicable to the service with your legal team and confirm that your use case complies with the terms
   before proceeding.
 
 Parameters:
 
   OpenWeatherAPIKey:
-    # The demo relies on you having an account with OpenWeatherMap, and an API key to access the Weather service. 
-    # This service is available on the OpenWeatherMap free plan. (https://openweathermap.org/current)
     Type: String
     Description: OpenWeather API Key
+    Default: "ce06bf7919d73eb7a94b7560fc225ccf"
 
-  FoundationModel: 
+  FoundationModel:
     Type: String
     Description: Foundation model used by the agent
     Default: "anthropic.claude-3-haiku-20240307-v1:0"
@@ -28,7 +27,7 @@ Globals:
     MemorySize: 128
 
 Resources:
-  # This function handles and routes requests from the agent's action group.  In this demo this single function 
+  # This function handles and routes requests from the agent's action group.  In this demo this single function
   # handles all requests and makes calls to supporting services.
   AgentFunction:
     Type: AWS::Serverless::Function
@@ -75,7 +74,7 @@ Resources:
                   - geo:SearchPlaceIndexForPosition
                 Resource: !GetAtt LocationServicesPlacesIndex.Arn
 
-  # A resource policy for the Lamba Function that enables the agent to call the function. 
+  # A resource policy for the Lamba Function that enables the agent to call the function.
   AgentFunctionInvocationPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -85,15 +84,15 @@ Resources:
       SourceAccount: !Ref 'AWS::AccountId'
       SourceArn: !GetAtt BedrockAgent.AgentArn
 
-  # The Lambda Function uses the Amazon Location Service for location information. 
-  LocationServicesPlacesIndex: 
+  # The Lambda Function uses the Amazon Location Service for location information.
+  LocationServicesPlacesIndex:
     Type: AWS::Location::PlaceIndex
     Properties:
       DataSource: Here
-      DataSourceConfiguration: 
+      DataSourceConfiguration:
         IntendedUse: SingleUse
       IndexName:
-        !Sub 
+        !Sub
           - "place.index.${Segment}"
           - Segment: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref "AWS::StackId"]]]]
 
@@ -102,15 +101,15 @@ Resources:
     Type: AWS::Bedrock::Agent
     Properties:
 
-      ActionGroups: 
-        # In order for the agent to be able to request the user for additional information when trying to 
+      ActionGroups:
+        # In order for the agent to be able to request the user for additional information when trying to
         # complete a task, you must specifiy an action group with a ParentActionGroupSignature of AMAZON.UserInput
         - ActionGroupName: UserInputAction
           ParentActionGroupSignature: AMAZON.UserInput
-            
+
         # This action group defines the 'tools' that the agent can access.
         - ActionGroupName: AgentActionGroup
-          ActionGroupExecutor: 
+          ActionGroupExecutor:
             Lambda: !GetAtt AgentFunction.Arn
           ActionGroupState: ENABLED
 
@@ -124,7 +123,7 @@ Resources:
                     Description: "Name of the place to find coordinates for"
                     Required: true
                     Type: string
-          
+
               - Description: Get the current local time for a specified latitude and longitude.
                 Name: getCurrentTime
                 Parameters:
@@ -154,7 +153,7 @@ Resources:
               - getCoordinates
               - getCurrentTime
               - getCurrentWeather
-            
+
       AgentName: OutfitAssistantAgent
       AgentResourceRoleArn: !GetAtt BedrockAgentRole.Arn
       AutoPrepare: true
@@ -163,15 +162,15 @@ Resources:
       FoundationModel: !Ref FoundationModel
       IdleSessionTTLInSeconds: 1800
       Instruction: >
-        You are a personal assistant. You are friendly, polite and casual. 
+        You are a personal assistant. You are friendly, polite and casual.
 
-        You help with deciding what outfit to wear considering the current time of day, and the weather. You must find out, or have been told my location before you can help me. Unless I have told you otherwise, use the time of day to predict the activity I might be doing. 
+        You help with deciding what outfit to wear considering the current time of day, and the weather. You must find out, or have been told my location before you can help me. Unless I have told you otherwise, use the time of day to predict the activity I might be doing.
 
-        You must also consider the weather when suggesting an outfit.  You must consider the description of the weather, the currect temperature, and the humidity levels. 
+        You must also consider the weather when suggesting an outfit.  You must consider the description of the weather, the currect temperature, and the humidity levels.
 
         You may suggest suitable accessories based on the weather too.
 
-        While you will use latitude and longitude to get details of the location I am in, you must not reply to me with these details.  The latitude and longitude are just for you to work in the background. 
+        While you will use latitude and longitude to get details of the location I am in, you must not reply to me with these details.  The latitude and longitude are just for you to work in the background.
 
         If I don't ask a specific question, or I ask a question you don't know the answer to, assume that I am asking for fashion advice and select an outfit based from what you know already.  If you don't know key details, then ask me for them.
 
@@ -204,7 +203,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - bedrock:InvokeModel
-                Resource: 
+                Resource:
                   !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/${FoundationModel}"
 
   BedrockAgentAlias:
@@ -216,7 +215,6 @@ Resources:
 
 
 Outputs:
-  BedrockAgent: 
+  BedrockAgent:
     Description: Bedrock Agent ARN
     Value: !Ref BedrockAgent
-
