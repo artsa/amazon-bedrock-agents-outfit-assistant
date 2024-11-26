@@ -12,9 +12,10 @@ Description: >
 Parameters:
 
   OpenWeatherAPIKey:
+    # The demo relies on you having an account with OpenWeatherMap, and an API key to access the Weather service.
+    # This service is available on the OpenWeatherMap free plan. (https://openweathermap.org/current)
     Type: String
     Description: OpenWeather API Key
-    Default: "ce06bf7919d73eb7a94b7560fc225ccf"
 
   FoundationModel:
     Type: String

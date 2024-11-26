@@ -1,5 +1,6 @@
 .DS_Store
 .aws-sam
+variables
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
